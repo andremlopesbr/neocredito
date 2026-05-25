@@ -1,0 +1,405 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "API Neo Crédito — Módulo de Propostas de Crédito",
+    "description": "Especificação dos endpoints do MVP de Propostas de Crédito e Controle de Acessos (US-01 e US-02).",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Servidor Local de Desenvolvimento"
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "summary": "Autentica um usuário e retorna o token JWT",
+        "description": "Recebe o e-mail e senha do usuário. Se as credenciais estiverem corretas, retorna um token JWT com validade de 8 horas contendo o perfil de acesso e o corbanId associado (caso seja CORBAN).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "corban1@neocredito.com.br"
+                  },
+                  "senha": {
+                    "type": "string",
+                    "example": "Teste@2024"
+                  }
+                },
+                "required": ["email", "senha"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Autenticado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string",
+                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    },
+                    "usuario": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "example": "b835e297-f06b-4e07-a3f2-111111111111"
+                        },
+                        "email": {
+                          "type": "string",
+                          "example": "corban1@neocredito.com.br"
+                        },
+                        "perfil": {
+                          "type": "string",
+                          "enum": ["CORBAN", "OPERADOR"],
+                          "example": "CORBAN"
+                        },
+                        "corbanId": {
+                          "type": "string",
+                          "nullable": true,
+                          "example": "corban-1-uuid-parceiro"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "E-mail ou senha incorretos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "E-mail ou senha incorretos."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "summary": "Obtém dados do usuário atualmente autenticado",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dados do usuário logado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "perfil": {
+                      "type": "string"
+                    },
+                    "corbanId": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "criadoEm": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado ou Token Expirado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Token expirado"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/propostas": {
+      "post": {
+        "summary": "Cria uma nova proposta de crédito (US-01)",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Cria uma proposta de crédito em status inicial RASCUNHO. Os juros, valor das parcelas e total a pagar são calculados automaticamente.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "clienteNome": {
+                    "type": "string",
+                    "example": "João da Silva"
+                  },
+                  "clienteCpf": {
+                    "type": "string",
+                    "example": "11144477735"
+                  },
+                  "clienteRenda": {
+                    "type": "number",
+                    "example": 3500.0
+                  },
+                  "valorSolicitado": {
+                    "type": "number",
+                    "example": 4000.0
+                  },
+                  "numeroParcelas": {
+                    "type": "integer",
+                    "enum": [6, 12, 18, 24, 36],
+                    "example": 12
+                  }
+                },
+                "required": ["clienteNome", "clienteCpf", "clienteRenda", "valorSolicitado", "numeroParcelas"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Proposta criada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string", "format": "uuid" },
+                    "clienteNome": { "type": "string" },
+                    "clienteCpf": { "type": "string" },
+                    "clienteRenda": { "type": "number" },
+                    "valorSolicitado": { "type": "number" },
+                    "numeroParcelas": { "type": "integer" },
+                    "taxaJuros": { "type": "number", "example": 0.0249 },
+                    "valorParcela": { "type": "number", "example": 487.14 },
+                    "totalAPagar": { "type": "number", "example": 5845.68 },
+                    "status": { "type": "string", "example": "RASCUNHO" },
+                    "criadoPorId": { "type": "string", "format": "uuid" },
+                    "criadoEm": { "type": "string", "format": "date-time" },
+                    "atualizadoEm": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro de validação dos dados de entrada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": { "type": "string", "example": "Erro de validação nos dados fornecidos." },
+                    "details": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "path": { "type": "string", "example": "valorSolicitado" },
+                          "message": { "type": "string", "example": "O valor solicitado mínimo é R$ 500,00." }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Lista as propostas com paginação e filtros (US-01 / US-02)",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Lista as propostas cadastradas. Caso o usuário autenticado seja um CORBAN, aplica o isolamento de tenant retornando apenas propostas do seu corbanId. Caso seja um OPERADOR, exibe todos os registros.",
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "string" }, "description": "Página da paginação (padrão 1)" },
+          { "name": "limit", "in": "query", "schema": { "type": "string" }, "description": "Limite por página (padrão 10)" },
+          { "name": "status", "in": "query", "schema": { "type": "string" }, "description": "Filtro por status" },
+          { "name": "cpf", "in": "query", "schema": { "type": "string" }, "description": "Filtro por CPF (com ou sem máscara)" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de propostas obtida com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "dados": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "paginacao": {
+                      "type": "object",
+                      "properties": {
+                        "total": { "type": "integer" },
+                        "pagina": { "type": "integer" },
+                        "limite": { "type": "integer" },
+                        "totalPaginas": { "type": "integer" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/propostas/{id}": {
+      "get": {
+        "summary": "Obtém uma proposta detalhada por ID (US-01 / US-02)",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Proposta encontrada"
+          },
+          "403": {
+            "description": "Acesso não autorizado (CORBAN tentando acessar proposta de outro CORBAN)"
+          },
+          "404": {
+            "description": "Proposta não encontrada"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Cancela uma proposta de crédito (Soft Delete) (US-01 / US-02)",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Transiciona o status da proposta para CANCELADA sem removê-la fisicamente do banco de dados. Um CORBAN só pode cancelar suas próprias propostas que ainda estejam no status RASCUNHO.",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cancelado com sucesso (Soft Delete)"
+          },
+          "403": {
+            "description": "Acesso negado (CORBAN tentando cancelar proposta alheia ou fora de RASCUNHO)"
+          },
+          "422": {
+            "description": "Transição de status inválida (Proposta já estava no status terminal APROVADA)"
+          }
+        }
+      }
+    },
+    "/propostas/{id}/status": {
+      "patch": {
+        "summary": "Atualiza o status de uma proposta (US-01 / US-02)",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Exclusivo de usuários OPERADORES. Altera o status da proposta respeitando a máquina de estados (RASCUNHO -> EM_ANALISE -> APROVADA / REPROVADA). Em caso de REPROVADA, exige motivo.",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": ["EM_ANALISE", "APROVADA", "REPROVADA", "CANCELADA"],
+                    "example": "REPROVADA"
+                  },
+                  "motivoReprovacao": {
+                    "type": "string",
+                    "example": "Score cadastral abaixo do mínimo exigido."
+                  }
+                },
+                "required": ["status"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Status alterado com sucesso"
+          },
+          "400": {
+            "description": "Erro de validação (motivoReprovacao obrigatório para REPROVADA)"
+          },
+          "403": {
+            "description": "Acesso negado (CORBAN tentando alterar status)"
+          },
+          "422": {
+            "description": "Transição de status inválida na esteira"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

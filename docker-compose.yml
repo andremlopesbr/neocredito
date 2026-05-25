@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: neocredito_backend_mvp
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=file:./dev.db
+      - JWT_SECRET=super-secret-key-neo-credito-2026-production-fallbacks
+      - JWT_EXPIRES_IN=8h
+    restart: always
