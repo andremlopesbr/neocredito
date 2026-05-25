@@ -1,0 +1,36 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Usuario {
+  id        String     @id @default(uuid())
+  email     String     @unique
+  senhaHash String
+  perfil    String     // "CORBAN" | "OPERADOR"
+  corbanId  String?    // Identificador do CORBAN (nulo para operadores)
+  criadoEm  DateTime   @default(now())
+  propostas Proposta[] @relation("UsuarioPropostas")
+}
+
+model Proposta {
+  id               String   @id @default(uuid())
+  clienteNome      String
+  clienteCpf       String
+  clienteRenda     Float
+  valorSolicitado  Float
+  numeroParcelas   Int
+  taxaJuros        Float
+  valorParcela     Float
+  totalAPagar      Float
+  status           String   // "RASCUNHO" | "EM_ANALISE" | "APROVADA" | "REPROVADA" | "CANCELADA"
+  motivoReprovacao String?
+  criadoPorId      String
+  criadoPor        Usuario  @relation("UsuarioPropostas", fields: [criadoPorId], references: [id])
+  criadoEm         DateTime @default(now())
+  atualizadoEm     DateTime @updatedAt
+}
