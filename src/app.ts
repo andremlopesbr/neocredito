@@ -25,19 +25,19 @@ const authController = new AuthController();
 const propostaController = new PropostaController();
 
 // ----------------------------------------------------
-// Rotas de Autenticação (US-02)
+// Rotas de Autenticação
 // ----------------------------------------------------
 app.post('/auth/login', authController.login);
 app.get('/auth/me', authMiddleware, authController.me);
 
 // ----------------------------------------------------
-// Rotas de Propostas de Crédito (US-01 / US-02)
+// Rotas de Propostas de Crédito
 // ----------------------------------------------------
 app.post('/propostas', authMiddleware, propostaController.criar);
 app.get('/propostas', authMiddleware, propostaController.listar);
 app.get('/propostas/:id', authMiddleware, propostaController.obterPorId);
 
-// Regra US-02: Apenas OPERADOR pode atualizar o status de propostas (AC3 US-02)
+// Apenas OPERADOR pode atualizar o status de propostas (AC3)
 app.patch(
   '/propostas/:id/status',
   authMiddleware,
@@ -45,7 +45,7 @@ app.patch(
   propostaController.atualizarStatus
 );
 
-// Soft delete: acionado via DELETE (US-01 / US-02 com restrições por ator)
+// Soft delete: acionado via DELETE com restrições por ator
 app.delete('/propostas/:id', authMiddleware, propostaController.cancelar);
 
 // Rota de Health Check simples e semântica

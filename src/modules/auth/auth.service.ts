@@ -37,7 +37,7 @@ export class AuthService {
     const secret = process.env.JWT_SECRET || 'super-secret-key-neo-credito-2026-development-only';
     const expires = (process.env.JWT_EXPIRES_IN as any) || '8h';
 
-    // Payload do JWT conforme especificação US-02: { sub, perfil, corbanId? }
+    // Payload do JWT: { sub, perfil, corbanId? }
     const token = jwt.sign(
       {
         sub: usuario.id,

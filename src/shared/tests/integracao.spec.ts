@@ -3,7 +3,7 @@ import app from '../../app';
 import { prisma } from '../database/prisma';
 import { STATUS } from '../helpers/maquinaEstado';
 
-describe('Testes de Integração — API Neo Crédito (US-01 e US-02)', () => {
+describe('Testes de Integração — API Neo Crédito', () => {
   let tokenCorban1: string;
   let tokenCorban2: string;
   let tokenOperador: string;
@@ -37,7 +37,7 @@ describe('Testes de Integração — API Neo Crédito (US-01 e US-02)', () => {
     await prisma.$disconnect();
   });
 
-  describe('Módulo de Autenticação (US-02)', () => {
+  describe('Módulo de Autenticação', () => {
     test('POST /auth/login — deve rejeitar credenciais inválidas com HTTP 401', async () => {
       const res = await request(app)
         .post('/auth/login')
@@ -47,7 +47,7 @@ describe('Testes de Integração — API Neo Crédito (US-01 e US-02)', () => {
       expect(res.body).toHaveProperty('error');
     });
 
-    test('POST /auth/login — deve retornar token JWT válido para credenciais corretas (AC1 US-02)', async () => {
+    test('POST /auth/login — deve retornar token JWT válido para credenciais corretas', async () => {
       const res = await request(app)
         .post('/auth/login')
         .send({ email: 'operador@neocredito.com.br', senha: 'Teste@2024' });
@@ -57,7 +57,7 @@ describe('Testes de Integração — API Neo Crédito (US-01 e US-02)', () => {
       expect(res.body.usuario.perfil).toBe('OPERADOR');
     });
 
-    test('GET /auth/me — deve retornar o perfil correto a partir do JWT (US-02)', async () => {
+    test('GET /auth/me — deve retornar o perfil correto a partir do JWT', async () => {
       const res = await request(app)
         .get('/auth/me')
         .set('Authorization', `Bearer ${tokenCorban1}`);
@@ -76,9 +76,9 @@ describe('Testes de Integração — API Neo Crédito (US-01 e US-02)', () => {
     });
   });
 
-  describe('Módulo de Propostas de Crédito — Fluxos de CRUD (US-01 / US-02)', () => {
+  describe('Módulo de Propostas de Crédito — Fluxos de CRUD', () => {
     
-    test('POST /propostas — deve criar proposta como RASCUNHO e calcular juros/parcelas automaticamente (AC1/AC2 US-01)', async () => {
+    test('POST /propostas — deve criar proposta como RASCUNHO e calcular juros/parcelas automaticamente', async () => {
       const res = await request(app)
         .post('/propostas')
         .set('Authorization', `Bearer ${tokenCorban1}`)
@@ -97,7 +97,7 @@ describe('Testes de Integração — API Neo Crédito (US-01 e US-02)', () => {
       propostaCorban1Id = res.body.id;
     });
 
-    test('POST /propostas — deve validar campos obrigatórios e rejeitar valores limítrofes inválidos com HTTP 400 (AC5 US-01)', async () => {
+    test('POST /propostas — deve validar campos obrigatórios e rejeitar valores limítrofes inválidos com HTTP 400', async () => {
       const res = await request(app)
         .post('/propostas')
         .set('Authorization', `Bearer ${tokenCorban1}`)
@@ -113,7 +113,7 @@ describe('Testes de Integração — API Neo Crédito (US-01 e US-02)', () => {
       expect(res.body.details.length).toBeGreaterThanOrEqual(4);
     });
 
-    test('GET /propostas — CORBAN só deve listar suas próprias propostas (AC2 US-02)', async () => {
+    test('GET /propostas — CORBAN só deve listar suas próprias propostas', async () => {
       // Criar uma proposta para o CORBAN 2 para isolamento
       const resCriar2 = await request(app)
         .post('/propostas')
@@ -139,7 +139,7 @@ describe('Testes de Integração — API Neo Crédito (US-01 e US-02)', () => {
       expect(contemProposta2).toBe(false);
     });
 
-    test('GET /propostas — OPERADOR deve conseguir listar todas as propostas (US-02)', async () => {
+    test('GET /propostas — OPERADOR deve conseguir listar todas as propostas', async () => {
       const resListarOp = await request(app)
         .get('/propostas')
         .set('Authorization', `Bearer ${tokenOperador}`);
@@ -156,7 +156,7 @@ describe('Testes de Integração — API Neo Crédito (US-01 e US-02)', () => {
       expect(contemProposta2).toBe(true);
     });
 
-    test('GET /propostas/:id — CORBAN 2 não deve conseguir ler proposta do CORBAN 1 retornando HTTP 403 (AC4 US-02)', async () => {
+    test('GET /propostas/:id — CORBAN 2 não deve conseguir ler proposta do CORBAN 1 retornando HTTP 403', async () => {
       const res = await request(app)
         .get(`/propostas/${propostaCorban1Id}`)
         .set('Authorization', `Bearer ${tokenCorban2}`);
@@ -164,7 +164,7 @@ describe('Testes de Integração — API Neo Crédito (US-01 e US-02)', () => {
       expect(res.status).toBe(403);
     });
 
-    test('PATCH /propostas/:id/status — CORBAN não pode atualizar status de proposta retornando HTTP 403 (AC3 US-02)', async () => {
+    test('PATCH /propostas/:id/status — CORBAN não pode atualizar status de proposta retornando HTTP 403', async () => {
       const res = await request(app)
         .patch(`/propostas/${propostaCorban1Id}/status`)
         .set('Authorization', `Bearer ${tokenCorban1}`)
@@ -173,7 +173,7 @@ describe('Testes de Integração — API Neo Crédito (US-01 e US-02)', () => {
       expect(res.status).toBe(403);
     });
 
-    test('PATCH /propostas/:id/status — OPERADOR pode transitar status respeitando máquina de estados (AC1/AC3 US-01)', async () => {
+    test('PATCH /propostas/:id/status — OPERADOR pode transitar status respeitando máquina de estados', async () => {
       // 1. Transitar RASCUNHO -> EM_ANALISE (Permitido)
       const res1 = await request(app)
         .patch(`/propostas/${propostaCorban1Id}/status`)
@@ -183,7 +183,7 @@ describe('Testes de Integração — API Neo Crédito (US-01 e US-02)', () => {
       expect(res1.status).toBe(200);
       expect(res1.body.status).toBe(STATUS.EM_ANALISE);
 
-      // 2. Transitar EM_ANALISE -> REPROVADA sem motivo (Deve Falhar 400 - AC5 US-01)
+      // 2. Transitar EM_ANALISE -> REPROVADA sem motivo (Deve Falhar 400)
       const res2 = await request(app)
         .patch(`/propostas/${propostaCorban1Id}/status`)
         .set('Authorization', `Bearer ${tokenOperador}`)
@@ -201,7 +201,7 @@ describe('Testes de Integração — API Neo Crédito (US-01 e US-02)', () => {
       expect(res3.body.status).toBe(STATUS.REPROVADA);
       expect(res3.body.motivoReprovacao).toBe('Score baixo');
 
-      // 4. Transitar de REPROVADA para EM_ANALISE (Inválido - Terminal - HTTP 422 - AC3 US-01)
+      // 4. Transitar de REPROVADA para EM_ANALISE (Inválido - Terminal - HTTP 422)
       const res4 = await request(app)
         .patch(`/propostas/${propostaCorban1Id}/status`)
         .set('Authorization', `Bearer ${tokenOperador}`)
@@ -210,7 +210,7 @@ describe('Testes de Integração — API Neo Crédito (US-01 e US-02)', () => {
       expect(res4.status).toBe(422);
     });
 
-    test('DELETE /propostas/:id — CORBAN não pode cancelar proposta que não esteja em RASCUNHO (US-02)', async () => {
+    test('DELETE /propostas/:id — CORBAN não pode cancelar proposta que não esteja em RASCUNHO', async () => {
       // Como propostaCorban1Id está no status REPROVADA
       const res = await request(app)
         .delete(`/propostas/${propostaCorban1Id}`)
@@ -219,7 +219,7 @@ describe('Testes de Integração — API Neo Crédito (US-01 e US-02)', () => {
       expect(res.status).toBe(403);
     });
 
-    test('DELETE /propostas/:id — CORBAN pode cancelar RASCUNHO próprio realizando Soft Delete (AC6 US-01 / US-02)', async () => {
+    test('DELETE /propostas/:id — CORBAN pode cancelar RASCUNHO próprio realizando Soft Delete', async () => {
       // 1. Criar novo rascunho
       const resCriar = await request(app)
         .post('/propostas')

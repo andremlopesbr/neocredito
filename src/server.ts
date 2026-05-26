@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 3000;
 
 /**
  * Função para garantir que o banco de dados possua os dados iniciais do seed
- * caso ele esteja sendo iniciado pela primeira vez (AC6 US-02).
+ * caso ele esteja sendo iniciado pela primeira vez.
  */
 async function garantirDadosIniciais() {
   try {

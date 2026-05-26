@@ -44,7 +44,7 @@ export class PropostaService {
 
     const where: any = {};
 
-    // Filtros de CPF e Status solicitados no AC4
+    // Filtros de CPF e Status
     if (status) {
       where.status = status;
     }
@@ -52,7 +52,7 @@ export class PropostaService {
       where.clienteCpf = cpf;
     }
 
-    // Regra US-02: CORBAN só lista propostas criadas por usuários do mesmo corbanId
+    // Regra: CORBAN só lista propostas criadas por usuários do mesmo corbanId
     if (usuarioLogado.perfil === 'CORBAN') {
       where.criadoPor = {
         corbanId: usuarioLogado.corbanId,
@@ -84,7 +84,7 @@ export class PropostaService {
   }
 
   /**
-   * Consulta uma proposta detalhada por ID respeitando isolamento de acesso (AC4 US-02).
+   * Consulta uma proposta detalhada por ID respeitando isolamento de acesso.
    */
   public async obterPropostaPorId(id: string, usuarioLogado: any) {
     const proposta = await prisma.proposta.findUnique({
@@ -105,10 +105,10 @@ export class PropostaService {
       throw new AppError('Proposta não encontrada.', 404);
     }
 
-    // Regra US-02: Se for CORBAN, só acessa se a proposta for do mesmo corbanId
+    // Regra: Se for CORBAN, só acessa se a proposta for do mesmo corbanId
     if (usuarioLogado.perfil === 'CORBAN') {
       if (proposta.criadoPor.corbanId !== usuarioLogado.corbanId) {
-        // Retorna HTTP 403 (e não 404) conforme AC4 da US-02
+        // Retorna HTTP 403 (e não 404)
         throw new AppError('Acesso não autorizado a esta proposta.', 403);
       }
     }
@@ -120,10 +120,10 @@ export class PropostaService {
   }
 
   /**
-   * Atualiza o status da proposta respeitando a máquina de estados e regras (US-01 / US-02).
+   * Atualiza o status da proposta respeitando a máquina de estados e regras.
    */
   public async atualizarStatus(id: string, novoStatus: string, motivoReprovacao: string | undefined, usuarioLogado: any) {
-    // Regra US-02: CORBAN não pode atualizar status via PATCH
+    // Regra: CORBAN não pode atualizar status via PATCH
     if (usuarioLogado.perfil !== 'OPERADOR') {
       throw new AppError('Ação permitida apenas para operadores internos.', 403);
     }
@@ -143,7 +143,7 @@ export class PropostaService {
       throw new AppError(error.message, 422);
     }
 
-    // Validação AC5 da US-01: motivoReprovacao é obrigatório quando status = REPROVADA
+    // Validação: motivoReprovacao é obrigatório quando status = REPROVADA
     if (novoStatus === STATUS.REPROVADA && (!motivoReprovacao || motivoReprovacao.trim() === '')) {
       throw new AppError('O motivo de reprovação é obrigatório quando o status é REPROVADA.', 400);
     }
@@ -160,7 +160,7 @@ export class PropostaService {
   }
 
   /**
-   * Realiza o cancelamento (Soft Delete) da proposta (US-01 / US-02).
+   * Realiza o cancelamento (Soft Delete) da proposta.
    */
   public async cancelarProposta(id: string, usuarioLogado: any) {
     const proposta = await prisma.proposta.findUnique({
@@ -178,13 +178,13 @@ export class PropostaService {
       throw new AppError('Proposta não encontrada.', 404);
     }
 
-    // Regras de acesso e status de cancelamento (US-02)
+    // Regras de acesso e status de cancelamento
     if (usuarioLogado.perfil === 'CORBAN') {
-      // 1. CORBAN só cancela se a proposta for de seu próprio corbanId
+      // CORBAN só cancela se a proposta for de seu próprio corbanId
       if (proposta.criadoPor.corbanId !== usuarioLogado.corbanId) {
         throw new AppError('Acesso não autorizado a esta proposta.', 403);
       }
-      // 2. CORBAN só cancela propostas no status RASCUNHO
+      // CORBAN só cancela propostas no status RASCUNHO
       if (proposta.status !== STATUS.RASCUNHO) {
         throw new AppError('Correspondentes bancários só podem cancelar propostas que estejam em RASCUNHO.', 403);
       }

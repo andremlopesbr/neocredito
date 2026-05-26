@@ -90,6 +90,28 @@ Todos os contratos de rotas, esquemas Zod de entrada e respostas JSON de erro es
 
 * **Swagger UI**: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
 
+### 🔑 Como utilizar a Autenticação no Swagger UI
+
+Para testar as rotas protegidas diretamente pela interface gráfica do Swagger UI:
+
+1. **Obtenha um Token**:
+   Você pode gerar o token JWT fazendo uma requisição de login. Por exemplo, utilizando o **cURL** no seu terminal (usando um dos usuários do Seed):
+
+   ```bash
+   curl -X POST http://localhost:3000/auth/login \
+     -H "Content-Type: application/json" \
+     -d '{"email": "operador@neocredito.com.br", "senha": "Teste@2024"}'
+   ```
+
+   Copie apenas o valor da propriedade `"token"` retornado no JSON de resposta.
+
+2. **Autorize a sessão**:
+   * No topo direito da página do Swagger UI, clique no botão **Authorize** (com ícone de cadeado).
+   * No campo de texto da janela modal, cole **apenas o token JWT obtido** (não escreva `Bearer` antes, pois a especificação do Swagger já insere o prefixo automaticamente).
+   * Clique em **Authorize** e depois em **Close**.
+
+3. **Execute requisições**: Todos os endpoints protegidos (identificados com um ícone de cadeado fechado) agora incluirão automaticamente o cabeçalho `Authorization: Bearer <seu_token>` quando você os testar com a opção *Try it out*.
+
 ---
 
 ## 🧪 Suíte de Testes Automatizados
@@ -116,7 +138,7 @@ npm run test:coverage
 
 2. **Cálculo da Parcela (Price Clássico)**: O arredondamento de centavos (2 casas decimais) é realizado no valor da parcela calculada e, a partir dele, obtém-se o total a pagar (`valorParcela * numeroParcelas`), refletindo a transação financeira da vida real sem sobras de dízimas periódicas.
 
-3. **Isolamento Multitenant (Papéis CORBAN)**: CORBANs são restritos por um middleware de segurança. A API injeta o `corbanId` do token e filtra de forma implícita as listagens de propostas. A tentativa de acessar um ID que não pertence ao próprio CORBAN retorna erro `HTTP 403 Forbidden` (em conformidade absoluta com as especificações exigidas na **US-02**).
+3. **Isolamento Multitenant (Papéis CORBAN)**: CORBANs são restritos por um middleware de segurança. A API injeta o `corbanId` do token e filtra de forma implícita as listagens de propostas. A tentativa de acessar um ID que não pertence ao próprio CORBAN retorna erro `HTTP 403 Forbidden` (em conformidade absoluta com as especificações exigidas).
 
 4. **Respostas e Padronização de Erros**: Toda a aplicação é amparada por um middleware global de exceções, padronizando retornos em `{ error, details }`. Erros Zod geram `HTTP 400`, transições inválidas na máquina de estados geram `HTTP 422` e falhas de autorização geram `HTTP 401` ou `HTTP 403`.
 

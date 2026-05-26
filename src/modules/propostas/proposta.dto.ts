@@ -3,7 +3,7 @@ import { validarCpf } from '../../shared/helpers/validadorCpf';
 import { STATUS } from '../../shared/helpers/maquinaEstado';
 
 /**
- * Esquema de validação para criação de uma nova proposta (US-01).
+ * Esquema de validação para criação de uma nova proposta.
  */
 export const criarPropostaSchema = z.object({
   clienteNome: z
@@ -31,7 +31,7 @@ export const criarPropostaSchema = z.object({
 export type CriarPropostaDTO = z.infer<typeof criarPropostaSchema>;
 
 /**
- * Esquema de validação para consulta de propostas filtradas e paginadas (US-01).
+ * Esquema de validação para consulta de propostas filtradas e paginadas.
  */
 export const listarPropostasSchema = z.object({
   page: z
@@ -54,7 +54,7 @@ export const listarPropostasSchema = z.object({
 export type ListarPropostasDTO = z.infer<typeof listarPropostasSchema>;
 
 /**
- * Esquema de validação para alteração de status da proposta (US-01).
+ * Esquema de validação para alteração de status da proposta.
  */
 export const atualizarStatusSchema = z.object({
   status: z.enum(

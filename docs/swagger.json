@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "API Neo Crédito — Módulo de Propostas de Crédito",
-    "description": "Especificação dos endpoints do MVP de Propostas de Crédito e Controle de Acessos (US-01 e US-02).",
+    "description": "Especificação dos endpoints do MVP de Propostas de Crédito e Controle de Acessos.",
     "version": "1.0.0"
   },
   "servers": [
@@ -158,7 +158,7 @@
     },
     "/propostas": {
       "post": {
-        "summary": "Cria uma nova proposta de crédito (US-01)",
+        "summary": "Cria uma nova proposta de crédito",
         "security": [
           {
             "BearerAuth": []
@@ -251,7 +251,7 @@
         }
       },
       "get": {
-        "summary": "Lista as propostas com paginação e filtros (US-01 / US-02)",
+        "summary": "Lista as propostas com paginação e filtros",
         "security": [
           {
             "BearerAuth": []
@@ -297,7 +297,7 @@
     },
     "/propostas/{id}": {
       "get": {
-        "summary": "Obtém uma proposta detalhada por ID (US-01 / US-02)",
+        "summary": "Obtém uma proposta detalhada por ID",
         "security": [
           {
             "BearerAuth": []
@@ -319,7 +319,7 @@
         }
       },
       "delete": {
-        "summary": "Cancela uma proposta de crédito (Soft Delete) (US-01 / US-02)",
+        "summary": "Cancela uma proposta de crédito (Soft Delete)",
         "security": [
           {
             "BearerAuth": []
@@ -344,7 +344,7 @@
     },
     "/propostas/{id}/status": {
       "patch": {
-        "summary": "Atualiza o status de uma proposta (US-01 / US-02)",
+        "summary": "Atualiza o status de uma proposta",
         "security": [
           {
             "BearerAuth": []
